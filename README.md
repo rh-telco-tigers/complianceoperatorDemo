@@ -1,9 +1,6 @@
 # Testing the Compliance Operator for OpenShift
 
-## TOC
-
 - [Testing the Compliance Operator for OpenShift](#testing-the-compliance-operator-for-openshift)
-  - [TOC](#toc)
   - [Introduction](#introduction)
   - [Requirements](#requirements)
   - [Installing the Compliance Operator](#installing-the-compliance-operator)
@@ -11,6 +8,7 @@
   - [Understanding Compliance Scan Settings](#understanding-compliance-scan-settings)
   - [Configuring and Running a Compliance Scan](#configuring-and-running-a-compliance-scan)
   - [Reviewing  the Results](#reviewing--the-results)
+    - [Applying a remediation to your cluster](#applying-a-remediation-to-your-cluster)
   - [Retrieving the RAW ARF Results of the Compliance Scan](#retrieving-the-raw-arf-results-of-the-compliance-scan)
 
 ## Introduction
@@ -143,7 +141,7 @@ ocp4-cis-node-worker   DONE    NON-COMPLIANT
 
 ## Reviewing  the Results
 
-Once the complaince scan has completed, you can review the results of the scan.
+Once the compliance scan has completed, you can review the results of the scan.
 
 ```
 $ oc get ComplianceCheckResult -n openshift-compliance
@@ -177,9 +175,45 @@ instructions: |-
 kind: ComplianceCheckResult
 ```
 
+We can also review the ComplianceRemediation object for this check with the following command:
+
+```shell
+$ oc get ComplianceRemediation/ocp4-cis-api-server-encryption-provider-cipher -n openshift-compliance -o yaml
+apiVersion: compliance.openshift.io/v1alpha1
+kind: ComplianceRemediation
+metadata:
+  name: ocp4-cis-api-server-encryption-provider-cipher
+  namespace: openshift-compliance
+spec:
+  apply: false
+  current:
+    object:
+      apiVersion: config.openshift.io/v1
+      kind: APIServer
+      metadata:
+        name: cluster
+      spec:
+        encryption:
+          type: aescbc  
+```
+
+The remediation payload is stored in the _spec.current_ attribute of the output.
+
+### Applying a remediation to your cluster
+
+If you did not configure your ScanSettingBinding to automatically apply the remediations, you can manually select and apply individual remediations. Once you have identified the remediation you wish to apply, update the _spec.apply_ attribute to "true". For example to automatically apply the ocp4-cis-api-server-encryption-provider-cipher remediation run the following command:
+
+> **WARNING** Applying remediations should only be done after careful consideration and understanding of the changes that will be made, and how they may effect the cluster you are running on.
+
+```
+# WARNING - This example change will enable encryption and will disrupt the ability to log into your cluster while the change is applied.
+# ONLY APPLY if you understand the above
+$ oc -n openshift-compliance patch complianceremediations/ocp4-cis-api-server-encryption-provider-cipher --patch '{"spec":{"apply":true}}' --type=merge
+```
+
 ## Retrieving the RAW ARF Results of the Compliance Scan
 
-The results of the compliance operator are stored in a ReadWriteOnce persistent volume. In order to retrieve these results we will need to spawn a pod that will allow us to copy out the data.
+In some cases you may need to share the raw results with an auditing organization. The results of the compliance operator are stored in a ReadWriteOnce persistent volume. In order to retrieve these results we will need to spawn a pod that will allow us to copy out the data.
 
 > **NOTE**: Because the persistent volume is ReadWriteOnce, you must ensure that after you have retrieved the files you destroy the pod, or else the nightly scans will be unable to run.
 
@@ -199,8 +233,8 @@ $ vi retrieveResults-cis.yml
 # update the "claimName: <scan results pvc>" section to be '
 # claimName: ocp4-cis
 $ oc create -f retrieveResults-cis.yml -n openshift-compliance
-$ oc -n openshift-compliance rsync pv-extract:/scan-results .
+$ oc -n openshift-compliance cp pv-extract:/scan-results .
 $ oc delete pod/pv-extract -n openshift-compliance
 ```
 
-If you take a look in your current directory, you should now see a file such as `ocp4-cis-api-checks-pod.xml.bzip2` These results are in Asset Reporting Format (ARF). 
+If you take a look in your current directory, you should now see a folder structure that contains subdirectories "0,1,2". These are the three most recent scans that were completed. Inside each directory will be a file such as `ocp4-cis-api-checks-pod.xml.bzip2` which contains the results of the scan in Asset Reporting Format (ARF).
