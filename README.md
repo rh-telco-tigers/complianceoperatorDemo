@@ -15,10 +15,7 @@
 
 ## Introduction
 
-The [Compliance Operator](https://docs.openshift.com/container-platform/4.8/security/compliance_operator/compliance-operator-installation.html) is used to scan an OpenShift cluster and check for compliance against Kubernetes standards. The Compliance Operator leverages [OpenSCAP](https://www.open-scap.org/) to conduct the compliance scans.
-
-
->>>>>>The Compliance Operator lets OpenShift Container Platform administrators describe the desired compliance state of a cluster and provides them with an overview of gaps and ways to remediate them. The Compliance Operator assesses compliance of both the Kubernetes API resources of OpenShift Container Platform, as well as the nodes running the cluster. The Compliance Operator uses OpenSCAP, a NIST-certified tool, to scan and enforce security policies provided by the content.
+The [Compliance Operator](https://docs.openshift.com/container-platform/4.8/security/compliance_operator/compliance-operator-installation.html) is used to scan an OpenShift cluster and check for compliance against published standards. The Compliance Operator assesses compliance of both the Kubernetes API resources of OpenShift Container Platform, as well as the nodes running the cluster. The Compliance Operator leverages [OpenSCAP](https://www.open-scap.org/), a NIST-certified tool, to conduct the compliance scans.
 
 ## Requirements
 
