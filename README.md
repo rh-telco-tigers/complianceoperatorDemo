@@ -9,6 +9,7 @@
   - [Configuring and Running a Compliance Scan](#configuring-and-running-a-compliance-scan)
   - [Reviewing  the Results](#reviewing--the-results)
     - [Applying a remediation to your cluster](#applying-a-remediation-to-your-cluster)
+  - [Performing an On Demand Rescan](#performing-an-on-demand-rescan)
   - [Retrieving the RAW ARF Results of the Compliance Scan](#retrieving-the-raw-arf-results-of-the-compliance-scan)
 
 ## Introduction
@@ -132,7 +133,7 @@ ocp4-cis-node-worker   LAUNCHING   NOT-AVAILABLE
 The compliance operator will take some time to run the first scan. Re-run the previous command until you get the following output indicating the scans are **DONE**:
 
 ```shell
-oc get compliancescan -n openshift-compliance
+$ oc get compliancescan -n openshift-compliance
 NAME                   PHASE   RESULT
 ocp4-cis               DONE    NON-COMPLIANT
 ocp4-cis-node-master   DONE    NON-COMPLIANT
@@ -197,7 +198,7 @@ spec:
           type: aescbc  
 ```
 
-The remediation payload is stored in the _spec.current_ attribute of the output.
+The remediation payload is stored in the _spec.current_ attribute of the output. Not all ComplianceCheckResult objects create ComplianceRemediation objects. Only ComplianceCheckResult objects that can be remediated automatically do.
 
 ### Applying a remediation to your cluster
 
@@ -209,6 +210,19 @@ If you did not configure your ScanSettingBinding to automatically apply the reme
 # WARNING - This example change will enable encryption and will disrupt the ability to log into your cluster while the change is applied.
 # ONLY APPLY if you understand the above
 $ oc -n openshift-compliance patch complianceremediations/ocp4-cis-api-server-encryption-provider-cipher --patch '{"spec":{"apply":true}}' --type=merge
+```
+
+## Performing an On Demand Rescan
+
+Based on the [scansetting](#understanding-compliance-scan-settings) you choose, the Compliance Scan will run at the next scheduled time. If however you want to run a scan on demand, you can annotate the scan in order to indicate that a rescan is required.
+
+```shell
+$ oc annotate compliancescans/ocp4-cis compliance.openshift.io/rescan=
+$ oc get compliancescan -n openshift-compliance
+NAME                   PHASE       RESULT
+ocp4-cis               LAUNCHING   NOT-AVAILABLE
+ocp4-cis-node-master   DONE        NON-COMPLIANT
+ocp4-cis-node-worker   DONE        NON-COMPLIANT
 ```
 
 ## Retrieving the RAW ARF Results of the Compliance Scan
