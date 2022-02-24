@@ -11,6 +11,7 @@
     - [Applying a remediation to your cluster](#applying-a-remediation-to-your-cluster)
   - [Performing an On Demand Rescan](#performing-an-on-demand-rescan)
   - [Retrieving the RAW ARF Results of the Compliance Scan](#retrieving-the-raw-arf-results-of-the-compliance-scan)
+  - [References](#references)
 
 ## Introduction
 
@@ -252,3 +253,8 @@ $ oc delete pod/pv-extract -n openshift-compliance
 ```
 
 If you take a look in your current directory, you should now see a folder structure that contains subdirectories "0,1,2". These are the three most recent scans that were completed. Inside each directory will be a file such as `ocp4-cis-api-checks-pod.xml.bzip2` which contains the results of the scan in Asset Reporting Format (ARF).
+
+## References
+
+[OpenSCAP Home Page](https://www.open-scap.org/)
+[OpenShift Compliance Operator Install](https://docs.openshift.com/container-platform/4.7/security/compliance_operator/compliance-operator-installation.html)
